@@ -10,6 +10,7 @@ from rdkit.Chem import Descriptors, Draw, AllChem, BRICS, Lipinski
 from rdkit.Chem.Draw import rdMolDraw2D
 from rdkit.Chem.Scaffolds import MurckoScaffold
 from rdkit.Chem.FilterCatalog import FilterCatalog, FilterCatalogParams
+from streamlit_ketcher import st_ketcher
 import mols2grid
 import sys
 import os
@@ -79,23 +80,38 @@ class SMILESAnalyzer(BaseAnalyzer):
         
         # Manual input
         smiles = st.text_input(
-            "Enter SMILES",
+            "Enter SMILES...",
             value="[C@H]12CN(C[C@H](CC1)N2)c1c2c(nc(n1)OC[C@@]13CCCN1C[C@@H](C3)F)c(c(nc2)c1cc(cc2ccc(c(c12)C#C)F)O)F",
             help="KRAS inhibitor by default"
         )
         
+        # 2D Sketcher option
+        with st.expander("🎨 OR use 2D Molecular Sketcher", expanded=False):
+            st.markdown("Draw a molecule below and its SMILES will be displayed.")
+            
+            # Display ketcher with text input SMILES as default
+            ketcher_smiles = st_ketcher(smiles, height=500)
+            
+            # Display the SMILES from the sketcher
+            if ketcher_smiles:
+                st.code(ketcher_smiles, language="text")
+                st.caption("SMILES representation of the drawn molecule")
+        
+        # Determine which SMILES to use
+        final_smiles = smiles
+        
         # Auto-run Analyse on first page load by storing the SMILES in session state
         if 'current_smiles' not in st.session_state:
-            st.session_state.current_smiles = sidebar_smiles if sidebar_smiles else smiles
+            st.session_state.current_smiles = sidebar_smiles if sidebar_smiles else final_smiles
             st.success("🔍 Analysis started automatically")
             return st.session_state.current_smiles
 
         # Manual re-run button
-        if st.button("🔍 Analyse"):
-            st.session_state.current_smiles = sidebar_smiles if sidebar_smiles else smiles
-            return st.session_state.current_smiles
+        analyse_clicked = st.button("🔍 Analyse", type="primary", use_container_width=True)
+        if analyse_clicked:
+            st.session_state.current_smiles = sidebar_smiles if sidebar_smiles else final_smiles
         
-        # Return the previously analyzed SMILES if it exists
+        # Return the current SMILES for analysis
         if 'current_smiles' in st.session_state:
             return st.session_state.current_smiles
         

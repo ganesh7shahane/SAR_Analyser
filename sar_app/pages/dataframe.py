@@ -24,7 +24,7 @@ class DataFrameAnalyzer(BaseAnalyzer):
     
     def render(self):
         """Render the DataFrame visualisation page."""
-        st.title("⚛️ Molecule DataFrame Visualisation")
+        st.title("⚛️ Dataset Cleaning & Visualisation")
         
         # Introduction
         self._display_intro()

@@ -26,7 +26,7 @@ class ScaffoldAnalyzer(BaseAnalyzer):
     
     def render(self):
         """Render the scaffold analysis page."""
-        st.title("🏗️ Scaffold Finder")
+        st.title("🏗️ Scaffold Hunter")
         
         st.markdown("""
         Identify and analyze molecular scaffolds:
