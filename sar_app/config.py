@@ -56,7 +56,7 @@ class AppConfig:
     MOL_CLEAR_BACKGROUND: bool = False
     
     # Memory & Performance
-    MAX_ROWS: int = 100000
+    MAX_ROWS: int = 300000
     CHUNK_SIZE: int = 10000
     CACHE_TTL: int = 3600  # seconds
     

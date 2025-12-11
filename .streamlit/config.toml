@@ -1,7 +1,14 @@
+[server]
+# Remove file upload size limit (set to 1GB)
+maxUploadSize = 512
+
+# Increase max message size for large dataframes
+maxMessageSize = 1024
+
 [theme]
 base = "light"
-primaryColor = "#ff2b2b"
-backgroundColor = "#f0adad"
-secondaryBackgroundColor = "#ff8080"
+primaryColor = "#7f67eaff"
+backgroundColor = "#f1f4eaff"
+secondaryBackgroundColor = "#f9cfa1ff"
 textColor = "#262730"
 font = "sans serif"
