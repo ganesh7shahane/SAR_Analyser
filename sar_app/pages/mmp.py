@@ -353,15 +353,15 @@ class MMPAnalyzer(BaseAnalyzer):
         col1, col2 = st.columns([3, 1])
         
         with col1:
-            uploaded_file = st.file_uploader("Upload CSV", type=['csv'])
+            uploaded_file = st.file_uploader("Upload CSV or SDF", type=['csv', 'sdf'])
         
         with col2:
             use_default = st.checkbox("Use sample hERG dataset", value=True)
         
         # Load data
         if uploaded_file is not None:
-            csv_path = uploaded_file
-            self._df = pd.read_csv(csv_path)
+            from sar_app.utils import DataFrameUtils
+            self._df = DataFrameUtils.load_file(uploaded_file)
         elif use_default:
             csv_path = "data/hERG.csv"
             try:

@@ -31,7 +31,7 @@ class DataFrameAnalyzer(BaseAnalyzer):
         
         st.subheader("📁 Data Input")
         # File upload
-        uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
+        uploaded_file = st.file_uploader("Upload CSV or SDF file", type=["csv", "sdf"])
         
         # Load data
         if not self._load_data(uploaded_file, self.config.DEFAULT_DATAFRAME_URL):
@@ -75,6 +75,34 @@ class DataFrameAnalyzer(BaseAnalyzer):
         if not self.smiles_col:
             st.info("No SMILES column found - data cleaning options unavailable")
             return
+        
+        # Column selection expander - allow users to select which columns to keep
+        with st.expander("📋 Select Columns to Keep", expanded=False):
+            st.write("Unselect columns you want to remove from the analysis:")
+            all_columns = self._df.columns.tolist()
+            
+            # Create checkboxes in 3 columns for better layout
+            col_a, col_b, col_c = st.columns(3)
+            columns_to_keep = []
+            
+            for i, col in enumerate(all_columns):
+                # Distribute checkboxes across 3 columns
+                target = col_a if i % 3 == 0 else (col_b if i % 3 == 1 else col_c)
+                with target:
+                    # SMILES column is always kept and disabled
+                    if col == self.smiles_col:
+                        st.checkbox(f"**{col}** (SMILES)", value=True, disabled=True, key=f"col_keep_{col}")
+                        columns_to_keep.append(col)
+                    else:
+                        keep = st.checkbox(col, value=True, key=f"col_keep_{col}")
+                        if keep:
+                            columns_to_keep.append(col)
+            
+            # Apply column filtering
+            if len(columns_to_keep) < len(all_columns):
+                removed_cols = set(all_columns) - set(columns_to_keep)
+                self._df = self._df[columns_to_keep]
+                st.info(f"✅ Removed {len(removed_cols)} column(s): {', '.join(removed_cols)}")
         
         col1, col2, col3 = st.columns(3)
         

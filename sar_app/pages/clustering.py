@@ -36,9 +36,9 @@ class ClusteringAnalyzer(BaseAnalyzer):
         st.subheader("📁 Data Input")
         # File upload
         uploaded_file = st.file_uploader(
-            "Upload CSV with SMILES",
-            type=['csv'],
-            help="CSV file containing molecular SMILES"
+            "Upload CSV or SDF with SMILES",
+            type=['csv', 'sdf'],
+            help="CSV or SDF file containing molecular SMILES"
         )
         
         if not self._load_data(uploaded_file, self.config.DEFAULT_CLUSTERING_URL):
@@ -332,14 +332,19 @@ class ClusteringAnalyzer(BaseAnalyzer):
 
         col1, col2 = st.columns([3, 1])
         with col1:
-            n_display = st.slider(
-            "Number of clusters to display",
-            min_value=1,
-            max_value=max_display,
-            value=default_display,
-            step=1,
-            key="cluster_display_slider"
-            )
+            # Handle case when there's only 1 cluster (slider needs min < max)
+            if max_display == 1:
+                n_display = 1
+                st.info("Only 1 cluster found in the dataset.")
+            else:
+                n_display = st.slider(
+                    "Number of clusters to display",
+                    min_value=1,
+                    max_value=max_display,
+                    value=default_display,
+                    step=1,
+                    key="cluster_display_slider"
+                )
 
         # Select legend columns with multiselect
         available_legend_cols = [col for col in df.columns if col not in ['mol']]
@@ -704,22 +709,20 @@ class ClusteringAnalyzer(BaseAnalyzer):
             ascending = (sort_order == 'Ascending')
             display_df = display_df.sort_values(sort_by_activity, ascending=ascending)
         
-        # Select columns to display: ID/Name, activity, molecule, R-groups with structures
+        # Get user-selected columns from session state
+        id_col = st.session_state.get('clustering_id_col', None)
+        activity_col = st.session_state.get('clustering_activity_col', None)
+        
+        # Build default display columns: ID, activity, and R-groups only
         display_cols = []
         
-        # Add identifier column if available
-        if 'Name' in display_df.columns:
-            display_cols.append('Name')
-        if 'ID' in display_df.columns:
-            display_cols.append('ID')
-        elif 'index' in display_df.columns:
-            display_cols.append('index')
+        # Add identifier column
+        if id_col and id_col in display_df.columns:
+            display_cols.append(id_col)
         
-        # Add activity columns (numeric columns that might be activity)
-        activity_cols = [col for col in display_df.columns 
-                        if pd.api.types.is_numeric_dtype(display_df[col]) 
-                        and col not in ['index', 'Cluster_Index', 'ID']]
-        display_cols.extend(activity_cols[:2])  # Show up to 2 activity columns
+        # Add the user-selected activity column
+        if activity_col and activity_col in display_df.columns:
+            display_cols.append(activity_col)
         
         # Add molecule structure if checkbox is selected
         if show_molecule:
@@ -728,6 +731,25 @@ class ClusteringAnalyzer(BaseAnalyzer):
         # Add R-group structures
         for rg in r_groups:
             display_cols.append(f'{rg}_mol')
+        
+        # Dropdown to select additional columns to display
+        # Exclude already-selected columns, mol columns, and internal columns
+        excluded_cols = display_cols + ['mol', 'Molecule', 'Cluster_Index', 'index'] + [f'{rg}_mol' for rg in r_groups] + r_groups
+        available_extra_cols = [col for col in display_df.columns if col not in excluded_cols]
+        
+        additional_cols = st.multiselect(
+            "Select additional columns to display",
+            options=available_extra_cols,
+            default=[],
+            key="rgroup_additional_cols"
+        )
+        
+        # Insert additional columns after activity column
+        if additional_cols:
+            # Find position after activity column (or after ID if no activity)
+            insert_pos = len([c for c in display_cols if c not in ['Molecule'] + [f'{rg}_mol' for rg in r_groups]])
+            for i, col in enumerate(additional_cols):
+                display_cols.insert(insert_pos + i, col)
         
         # Filter to available columns
         display_cols = [col for col in display_cols if col in display_df.columns]
@@ -760,7 +782,7 @@ class ClusteringAnalyzer(BaseAnalyzer):
             for rg in r_groups:
                 if f'{rg}_mol' in html_display_df.columns:
                     html_display_df[f'{rg}_mol'] = html_display_df[f'{rg}_mol'].apply(
-                        lambda x: mol_to_image_tag(x, size=(150, 150))
+                        lambda x: mol_to_image_tag(x, size=(200, 200))
                     )
             
             # Convert to HTML and display

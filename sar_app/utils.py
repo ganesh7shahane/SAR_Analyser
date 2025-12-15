@@ -7,11 +7,12 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from rdkit import Chem
-from rdkit.Chem import Descriptors, AllChem, MolFromSmiles, MolToSmiles
+from rdkit.Chem import Descriptors, AllChem, MolFromSmiles, MolToSmiles, PandasTools
 from rdkit.Chem.Scaffolds import MurckoScaffold
 from typing import Optional, List, Tuple, Union
 import psutil
 import os
+import tempfile
 
 
 class MoleculeUtils:
@@ -176,6 +177,78 @@ class DataFrameUtils:
         except Exception as e:
             st.error(f"Error loading CSV: {str(e)}")
             return pd.DataFrame()
+    
+    @staticmethod
+    def load_sdf(file_source: Union[str, any], max_rows: Optional[int] = None) -> pd.DataFrame:
+        """Load SDF from file with optional row limit."""
+        try:
+            # If file_source is a Streamlit UploadedFile, save to temp file first
+            if hasattr(file_source, 'read'):
+                with tempfile.NamedTemporaryFile(mode='wb', suffix='.sdf', delete=False) as temp_file:
+                    temp_file.write(file_source.read())
+                    temp_path = temp_file.name
+                df = PandasTools.LoadSDF(temp_path, removeHs=True, smilesName='SMILES')
+                os.unlink(temp_path)  # Clean up temp file
+            else:
+                # Direct file path
+                df = PandasTools.LoadSDF(file_source, removeHs=True, smilesName='SMILES')
+            
+            # Apply row limit if specified
+            if max_rows and len(df) > max_rows:
+                df = df.head(max_rows)
+            
+            # Remove ROMol column if present (not needed for display)
+            if 'ROMol' in df.columns:
+                df = df.drop(columns=['ROMol'])
+            
+            # Convert numeric columns from strings to proper numeric types
+            # SDF properties are often loaded as strings
+            for col in df.columns:
+                if col not in ['SMILES', 'ID', 'ROMol']:
+                    # Try to convert to numeric
+                    converted = pd.to_numeric(df[col], errors='coerce')
+                    # Only use converted column if most values converted successfully
+                    non_null_original = df[col].notna().sum()
+                    non_null_converted = converted.notna().sum()
+                    if non_null_original > 0 and non_null_converted / non_null_original >= 0.5:
+                        df[col] = converted
+            
+            return df
+        except Exception as e:
+            st.error(f"Error loading SDF: {str(e)}")
+            return pd.DataFrame()
+    
+    @staticmethod
+    def load_file(file_source: Union[str, any], max_rows: Optional[int] = None, file_type: Optional[str] = None) -> pd.DataFrame:
+        """
+        Load data from CSV or SDF file.
+        
+        Args:
+            file_source: File path, URL, or Streamlit UploadedFile object
+            max_rows: Optional maximum rows to load
+            file_type: Optional file type ('csv' or 'sdf'). If None, auto-detect from filename.
+            
+        Returns:
+            pd.DataFrame: Loaded data
+        """
+        # Determine file type
+        if file_type is None:
+            if hasattr(file_source, 'name'):
+                filename = file_source.name.lower()
+            elif isinstance(file_source, str):
+                filename = file_source.lower()
+            else:
+                filename = ''
+            
+            if filename.endswith('.sdf'):
+                file_type = 'sdf'
+            else:
+                file_type = 'csv'
+        
+        if file_type == 'sdf':
+            return DataFrameUtils.load_sdf(file_source, max_rows)
+        else:
+            return DataFrameUtils.load_csv(file_source, max_rows)
     
     @staticmethod
     def find_smiles_column(df: pd.DataFrame) -> Optional[str]:

@@ -51,11 +51,11 @@ class BaseAnalyzer(ABC):
             bool: True if data loaded successfully
         """
         if uploaded_file is not None:
-            self._df = DataFrameUtils.load_csv(uploaded_file, self.config.MAX_ROWS)
+            self._df = DataFrameUtils.load_file(uploaded_file, self.config.MAX_ROWS)
             st.success(f"✅ Loaded: {uploaded_file.name}")
         else:
-            self._df = DataFrameUtils.load_csv(default_url, self.config.MAX_ROWS)
-            st.info("📊 Using default dataset if no CSV given...")
+            self._df = DataFrameUtils.load_file(default_url, self.config.MAX_ROWS)
+            st.info("📊 Using default dataset if no file given...")
         
         if self._df.empty:
             st.error("❌ Failed to load data")
