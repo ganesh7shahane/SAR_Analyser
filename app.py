@@ -124,10 +124,10 @@ class SARApplication:
         """Factory method to create analyzer instance."""
         analyzers = {
             "Chemical Sketcher": KetcherAnalyzer,
-            "DataFrame Wizard": DataFrameAnalyzer,
+            "DataFrame Wiz": DataFrameAnalyzer,
             "Scaffold Hunter": ScaffoldAnalyzer,
             "SMILES Analysis": SMILESAnalyzer,
-            "Butina Clustering": ClusteringAnalyzer,
+            "R-group Table": ClusteringAnalyzer,
             "MMP Analysis": MMPAnalyzer,
             "ADMET Documentation": ADMETDocsAnalyzer
         }

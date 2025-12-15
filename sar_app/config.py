@@ -23,10 +23,10 @@ class AppConfig:
     MENU_ICON: str = "bar-chart-fill"
     MENU_ORIENTATION: str = "horizontal"
     MENU_OPTIONS: Tuple[str, ...] = (
-        "DataFrame Wizard",
+        "DataFrame Wiz",
         "Scaffold Hunter", 
         "SMILES Analysis",
-        "Butina Clustering",
+        "R-group Table",
         "MMP Analysis"
     )
     MENU_ICONS: Tuple[str, ...] = ("0-square", "1-square", "2-square", "3-square", "4-square")
