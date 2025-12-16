@@ -38,17 +38,18 @@ Built for: Medicinal chemists, computational chemists, and drug discovery scient
 - ADMET properties: solubility, Caco-2 permeability, P-glycoprotein Inhibition, etc
 - BRICS fragmentation
 
-### 🎯 Taylor-Butina Clustering
-- Structural clustering using Tanimoto distance
+### 🎯 R-group analysis
+- Clustering using Tanimoto similarity in fingerprints
 - Configurable fingerprint types
-- Interactive cluster visualization
+- Cluster visualization
 - Representative molecule selection
-- Export cluster assignments
+- R-group decomposition for each cluster, into their core and attached R-groups
+- Frequency of each R-group and representation using tables
 
 ## Installation
 ### 1. Clone the repository
 ```
-git clone https://github.com/ganesh7shahane/streamlit_apps.git
+git clone https://github.com/ganesh7shahane/SAR_Analyser.git
 cd SAR_Analyser
 ```
 ### 2. Install dependencies
