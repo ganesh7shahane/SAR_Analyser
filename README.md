@@ -1,3 +1,5 @@
+<img width="1408" height="768" alt="image" src="https://github.com/user-attachments/assets/90a932a3-6a73-4bc1-97be-4d331b29b842" />
+
 # SAR Analyser 🧬
 A modern, object-oriented Streamlit application for Structure-Activity Relationship (SAR) analysis in drug discovery. Built with RDKit, this tool provides a point-and-click interface for common cheminformatics workflows, eliminating the need to write repetitive Jupyter notebooks for each project.
 
