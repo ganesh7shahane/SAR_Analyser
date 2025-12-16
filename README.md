@@ -40,13 +40,17 @@ Built for: Medicinal chemists, computational chemists, and drug discovery scient
 - ADMET properties: solubility, Caco-2 permeability, P-glycoprotein Inhibition, etc
 - BRICS fragmentation
 
-### 🎯 R-group analysis
+### 🎯 R-group Table
 - Clustering using Tanimoto similarity in fingerprints
 - Configurable fingerprint types
 - Cluster visualization
 - Representative molecule selection
 - R-group decomposition for each cluster, into their core and attached R-groups
 - Frequency of each R-group and representation using tables
+
+### MMP Analysis
+- Extract all MMP transforms observed in a dataset
+- Visualise molecules belonging to MMP transforms
 
 ## Installation
 ### 1. Clone the repository
