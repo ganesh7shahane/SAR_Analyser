@@ -125,11 +125,12 @@ class ScaffoldAnalyzer(BaseAnalyzer):
                         subset=subset_list,
                         tooltip=tooltip_cols,
                         mol_col='mol',
-                        size=(150, 150)
+                        n_items_per_page=self.config.MOL_ITEMS_PER_PAGE,
+                        size=(200, 200)
                     )._repr_html_()
                     
                     # Calculate dynamic height based on number of legend columns
-                    base_height = 800
+                    base_height = 700
                     height_per_legend = 80
                     dynamic_height = base_height + (len(selected_legend_cols) * height_per_legend - 10)
                     
@@ -207,8 +208,8 @@ class ScaffoldAnalyzer(BaseAnalyzer):
             """
             if x_lim is None:
                 x_lim = [0, 10]
-            plt.figure(dpi=150)
-            sns.set(rc={'figure.figsize': (4, 1)})
+            plt.figure(dpi=200)
+            sns.set(rc={'figure.figsize': (4, 0.8)})
             sns.set_style('whitegrid')
             ax = sns.boxplot(x=dist, color=boxplot_color)
             ax.set_xlim(x_lim[0], x_lim[1])
@@ -228,7 +229,7 @@ class ScaffoldAnalyzer(BaseAnalyzer):
         def mol_to_base64_image(mol: Chem.Mol) -> str:
             """Convert an RDKit molecule to a base64 encoded image string."""
             plt.figure(dpi=1000)
-            drawer = rdMolDraw2D.MolDraw2DCairo(450, 150)
+            drawer = rdMolDraw2D.MolDraw2DCairo(550, 200)
             drawer.DrawMolecule(mol)
             drawer.FinishDrawing()
             text = drawer.GetDrawingText()

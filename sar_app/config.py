@@ -26,7 +26,7 @@ class AppConfig:
         "DataFrame Wiz",
         "Scaffold Hunter", 
         "SMILES Analysis",
-        "R-group Table",
+        "R-group Decomposition",
         "MMP Analysis"
     )
     MENU_ICONS: Tuple[str, ...] = ("0-square", "1-square", "2-square", "3-square", "4-square")

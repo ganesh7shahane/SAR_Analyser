@@ -68,7 +68,7 @@ class MMPAnalyzer(BaseAnalyzer):
     def rxn_to_base64_image(rxn):
         """Convert an RDKit reaction to a base64 encoded image"""
         try:
-            drawer = rdMolDraw2D.MolDraw2DCairo(300, 200)
+            drawer = rdMolDraw2D.MolDraw2DCairo(700, 200)
             drawer.DrawReaction(rxn)
             drawer.FinishDrawing()
             text = drawer.GetDrawingText()
@@ -85,8 +85,8 @@ class MMPAnalyzer(BaseAnalyzer):
         resulting image as a base64 image
         """
         try:
-            plt.figure(dpi=150)
-            sns.set(rc={'figure.figsize': (3, 1)})
+            plt.figure(dpi=200)
+            sns.set(rc={'figure.figsize': (3, 0.8)})
             sns.set_style('whitegrid')
             ax = sns.stripplot(x=dist, color=color)
             ax.axvline(0, ls="--", c="red")

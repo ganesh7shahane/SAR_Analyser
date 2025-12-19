@@ -88,13 +88,16 @@ class SARApplication:
             menu_icon="cast",
             default_index=current_index,
             orientation="horizontal",
+            key="main_nav_menu",
             styles={
-            "container": {"padding": "0!important", "background-color": "#f8fae1"},
+            "container": {"padding": "0!important", "background-color": "#f8fae1", "width": "100%"},
             "icon": {"color": "red", "font-size": "20px"},
             "nav-link": {
                 "font-size": "16px",
                 "text-align": "center",
                 "margin": "0px",
+                "padding": "15px 25px",  # Vertical and horizontal padding
+                "min-width": "150px",  # Minimum width for each menu item
                 "color": "#000000",  # Font color for unselected items
                 "--hover-color": "#eee",
             },
@@ -127,7 +130,7 @@ class SARApplication:
             "DataFrame Wiz": DataFrameAnalyzer,
             "Scaffold Hunter": ScaffoldAnalyzer,
             "SMILES Analysis": SMILESAnalyzer,
-            "R-group Table": ClusteringAnalyzer,
+            "R-group Decomposition": ClusteringAnalyzer,
             "MMP Analysis": MMPAnalyzer,
             "ADMET Documentation": ADMETDocsAnalyzer
         }

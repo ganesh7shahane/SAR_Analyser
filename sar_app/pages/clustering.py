@@ -467,7 +467,7 @@ class ClusteringAnalyzer(BaseAnalyzer):
                     st.markdown("**Core Structure:**")
                     col_img1, col_img2 = st.columns([1, 2])
                     with col_img1:
-                        st.image(Draw.MolToImage(core_mol, size=(250, 250)))
+                        st.image(Draw.MolToImage(core_mol, size=(800, 800)))
                     with col_img2:
                         # Show molblock
                         molblock = Chem.MolToMolBlock(core_mol)
@@ -549,7 +549,7 @@ class ClusteringAnalyzer(BaseAnalyzer):
             core_with_rgroups = rgd['Core'][0]
             col_core1, col_core2 = st.columns([1, 2])
             with col_core1:
-                st.image(Draw.MolToImage(core_with_rgroups, size=(300, 300)))
+                st.image(Draw.MolToImage(core_with_rgroups, size=(700, 700)))
             with col_core2:
                 st.info(f"The R-group decomposition identified {len([k for k in rgd.keys() if k != 'Core'])} R-group positions")
         
@@ -652,26 +652,27 @@ class ClusteringAnalyzer(BaseAnalyzer):
         st.markdown("---")
         st.subheader("📋 R-group Decomposition Table")
         
-        # Show core structure again before the table
-        st.markdown("**Core Structure with R-group Positions:**")
-        if 'Core' in rgd:
-            core_with_rgroups = rgd['Core'][0]
-            st.image(Draw.MolToImage(core_with_rgroups, size=(400, 400)))
-        
         st.markdown("**Molecules with R-group Substituents:**")
         
         # Add checkboxes and sorting options
-        col_check1, col_check2, col_sort1, col_sort2 = st.columns(4)
+        col_check1, col_check2, col_check3, col_sort1, col_sort2 = st.columns(5)
         with col_check1:
             show_molecule = st.checkbox("Include full molecule structure", value=False, key="show_molecule_structure")
         with col_check2:
             show_all_rows = st.checkbox("Display entire table", value=False, key="show_all_rgroup_rows")
+        with col_check3:
+            show_core = st.checkbox("Display core structure", value=False, key="show_core_structure")
         
         # Prepare dataframe for display
         display_df = cluster_df.copy()
         
         # Add molecule column for main structure
         display_df['Molecule'] = display_df[smiles_col].apply(Chem.MolFromSmiles)
+        
+        # Add core structure column if checkbox is selected
+        if show_core and 'Core' in rgd:
+            core_with_rgroups = rgd['Core'][0]
+            display_df['Core'] = [core_with_rgroups] * len(display_df)
         
         # Add R-group molecule columns
         for rg in r_groups:
@@ -728,6 +729,10 @@ class ClusteringAnalyzer(BaseAnalyzer):
         if show_molecule:
             display_cols.append('Molecule')
         
+        # Add core structure if checkbox is selected
+        if show_core and 'Core' in display_df.columns:
+            display_cols.append('Core')
+        
         # Add R-group structures
         for rg in r_groups:
             display_cols.append(f'{rg}_mol')
@@ -761,7 +766,7 @@ class ClusteringAnalyzer(BaseAnalyzer):
             from PIL import Image
             
             # Function to convert RDKit mol to base64 image for HTML display
-            def mol_to_image_tag(mol, size=(150, 150)):
+            def mol_to_image_tag(mol, size=(300, 300)):
                 if mol is None:
                     return ""
                 img = Draw.MolToImage(mol, size=size)
@@ -776,13 +781,18 @@ class ClusteringAnalyzer(BaseAnalyzer):
             # Convert molecule columns to image HTML tags
             if show_molecule and 'Molecule' in html_display_df.columns:
                 html_display_df['Molecule'] = html_display_df['Molecule'].apply(
-                    lambda x: mol_to_image_tag(x, size=(250, 250))
+                    lambda x: mol_to_image_tag(x, size=(400, 400))
+                )
+            
+            if show_core and 'Core' in html_display_df.columns:
+                html_display_df['Core'] = html_display_df['Core'].apply(
+                    lambda x: mol_to_image_tag(x, size=(400, 400))
                 )
             
             for rg in r_groups:
                 if f'{rg}_mol' in html_display_df.columns:
                     html_display_df[f'{rg}_mol'] = html_display_df[f'{rg}_mol'].apply(
-                        lambda x: mol_to_image_tag(x, size=(200, 200))
+                        lambda x: mol_to_image_tag(x, size=(300, 300))
                     )
             
             # Convert to HTML and display
@@ -806,13 +816,46 @@ class ClusteringAnalyzer(BaseAnalyzer):
         st.markdown("---")
         st.subheader("💾 Download R-group Table")
         
-        # Prepare download dataframe
-        download_cols = [smiles_col] + r_groups
-        if 'Name' in cluster_df.columns:
-            download_cols.insert(0, 'Name')
+        # Prepare download dataframe with all displayed columns
+        # Start with columns shown in the HTML table (excluding mol object columns)
+        download_cols = []
         
-        available_download_cols = [col for col in download_cols if col in cluster_df.columns]
-        download_df = cluster_df[available_download_cols]
+        # Add identifier column
+        if id_col and id_col in cluster_df.columns:
+            download_cols.append(id_col)
+        
+        # Add the user-selected activity column
+        if activity_col and activity_col in cluster_df.columns:
+            download_cols.append(activity_col)
+        
+        # Add SMILES column (represents the full molecule)
+        if smiles_col and smiles_col in cluster_df.columns:
+            download_cols.append(smiles_col)
+        
+        # Add additional columns that were selected
+        for col in additional_cols:
+            if col in cluster_df.columns and col not in download_cols:
+                download_cols.append(col)
+        
+        # Add R-group SMILES columns
+        for rg in r_groups:
+            if rg in cluster_df.columns and rg not in download_cols:
+                download_cols.append(rg)
+        
+        # Filter to available columns and remove duplicates while preserving order
+        seen = set()
+        available_download_cols = []
+        for col in download_cols:
+            if col in cluster_df.columns and col not in seen:
+                available_download_cols.append(col)
+                seen.add(col)
+        
+        download_df = cluster_df[available_download_cols].copy()
+        
+        # Apply same sorting as the display table
+        if sort_by_activity != 'None' and sort_by_activity in download_df.columns:
+            ascending = (sort_order == 'Ascending')
+            download_df = download_df.sort_values(sort_by_activity, ascending=ascending)
         
         csv = download_df.to_csv(index=False)
         st.download_button(

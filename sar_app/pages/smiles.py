@@ -207,7 +207,7 @@ class SMILESAnalyzer(BaseAnalyzer):
                 st.info("ℹ️ SA Score unavailable (sascorer not found)")
     
     def _display_admet_properties(self, smiles: str):
-        """Display ADMET properties using Admetica (automatically calculated)."""
+        """Display ADMET properties using Admetica (triggered by button click)."""
         import subprocess
         import tempfile
         import os
@@ -215,6 +215,16 @@ class SMILESAnalyzer(BaseAnalyzer):
         
         st.markdown("---")
         st.subheader("☘️ ADMET Properties")
+        
+        # Button to trigger ADMET calculation
+        if st.button("🧬 Calculate", type="primary", use_container_width=True):
+            st.session_state['calculate_admet'] = True
+            st.session_state['admet_smiles'] = smiles
+        
+        # Only calculate if button was clicked and SMILES matches
+        if not st.session_state.get('calculate_admet') or st.session_state.get('admet_smiles') != smiles:
+            st.info("Click the button above to calculate ADMET properties for this molecule.")
+            return
         
         with st.spinner("Calculating ADMET properties..."):
             try:
