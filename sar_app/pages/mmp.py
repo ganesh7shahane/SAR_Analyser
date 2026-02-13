@@ -65,9 +65,27 @@ class MMPAnalyzer(BaseAnalyzer):
         return [x[1] for x in frag_num_atoms_list]
     
     @staticmethod
+    def safe_reaction_from_smarts(transform_smiles):
+        """Safely create a reaction from SMARTS, removing stereochemistry if needed"""
+        import re
+        try:
+            # First try as-is
+            return AllChem.ReactionFromSmarts(transform_smiles, useSmiles=True)
+        except:
+            try:
+                # Remove stereochemistry markers (/, \, @, @@) that can cause parsing issues
+                clean_smiles = re.sub(r'[/\\]', '', transform_smiles)
+                clean_smiles = re.sub(r'@+', '', clean_smiles)
+                return AllChem.ReactionFromSmarts(clean_smiles, useSmiles=True)
+            except:
+                return None
+    
+    @staticmethod
     def rxn_to_base64_image(rxn):
         """Convert an RDKit reaction to a base64 encoded image"""
         try:
+            if rxn is None:
+                return f"<p style='font-size:10px;'>No image</p>"
             drawer = rdMolDraw2D.MolDraw2DCairo(700, 200)
             drawer.DrawReaction(rxn)
             drawer.FinishDrawing()
@@ -216,7 +234,7 @@ class MMPAnalyzer(BaseAnalyzer):
         
         mmp_df['idx'] = range(0, len(mmp_df))
         mmp_df['mean_delta'] = [x.mean() for x in mmp_df.Deltas]
-        mmp_df['rxn_mol'] = mmp_df.Transform.apply(AllChem.ReactionFromSmarts, useSmiles=True)
+        mmp_df['rxn_mol'] = mmp_df.Transform.apply(self.safe_reaction_from_smarts)
         
         # Create index linking delta_df and mmp_df
         transform_dict = dict([(a, b) for a, b in mmp_df[["Transform", "idx"]].values])
